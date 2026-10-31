@@ -1,0 +1,95 @@
+diff --git a/src/constants.h b/src/constants.h
+index 547dc52..a848311 100644
+--- a/src/constants.h
++++ b/src/constants.h
+@@ -3,6 +3,9 @@
+ #ifndef CONSTANTS_CLASS_H
+ #define CONSTANTS_CLASS_H
+ 
++// std::hash; older godot-cpp included it indirectly.
++#include <functional>
++
+ using namespace godot;
+ 
+ // Macros
+diff --git a/src/terrain_3d_assets.cpp b/src/terrain_3d_assets.cpp
+index d25bd80..d533599 100644
+--- a/src/terrain_3d_assets.cpp
++++ b/src/terrain_3d_assets.cpp
+@@ -557,8 +557,8 @@ void Terrain3DAssets::create_mesh_thumbnails(const int p_id, const Vector2i &p_s
+ 		Vector3 ofs = aabb.get_center();
+ 		aabb.position -= ofs;
+ 		Transform3D xform;
+-		xform.basis = Basis().rotated(Vector3(0.f, 1.f, 0.f), -Math_PI * 0.125f);
+-		xform.basis = Basis().rotated(Vector3(1.f, 0.f, 0.f), Math_PI * 0.125f) * xform.basis;
++		xform.basis = Basis().rotated(Vector3(0.f, 1.f, 0.f), -Math::PI * 0.125f);
++		xform.basis = Basis().rotated(Vector3(1.f, 0.f, 0.f), Math::PI * 0.125f) * xform.basis;
+ 		AABB rot_aabb = xform.xform(aabb);
+ 		real_t m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5f;
+ 		if (m == 0.f) {
+diff --git a/src/terrain_3d_collision.cpp b/src/terrain_3d_collision.cpp
+index af85ce8..b6cf01b 100644
+--- a/src/terrain_3d_collision.cpp
++++ b/src/terrain_3d_collision.cpp
+@@ -110,7 +110,7 @@ Dictionary Terrain3DCollision::_get_shape_data(const Vector2i &p_position, const
+ 	// Non rotated shape for normal array index above
+ 	//Transform3D xform = Transform3D(Basis(), global_pos);
+ 	// Rotated shape Y=90 for -90 rotated array index
+-	Transform3D xform = Transform3D(Basis(Vector3(0, 1.0, 0), Math_PI * .5), v2iv3(p_position + V2I(p_size / 2)));
++	Transform3D xform = Transform3D(Basis(Vector3(0, 1.0, 0), Math::PI * .5), v2iv3(p_position + V2I(p_size / 2)));
+ 	Dictionary shape_data;
+ 	shape_data["width"] = hshape_size;
+ 	shape_data["depth"] = hshape_size;
+diff --git a/src/terrain_3d_editor.cpp b/src/terrain_3d_editor.cpp
+index e8f662f..c87279e 100644
+--- a/src/terrain_3d_editor.cpp
++++ b/src/terrain_3d_editor.cpp
+@@ -153,7 +153,7 @@ void Terrain3DEditor::_operate_map(const Vector3 &p_global_position, const real_
+ 	PackedVector3Array gradient_points = _brush_data["gradient_points"];
+ 
+ 	real_t randf = UtilityFunctions::randf();
+-	real_t rot = randf * Math_PI * real_t(_brush_data["jitter"]);
++	real_t rot = randf * Math::PI * real_t(_brush_data["jitter"]);
+ 	if (_brush_data["align_to_view"]) {
+ 		rot += p_camera_direction;
+ 	}
+diff --git a/src/terrain_3d_instancer.cpp b/src/terrain_3d_instancer.cpp
+index 6467115..71daa89 100644
+--- a/src/terrain_3d_instancer.cpp
++++ b/src/terrain_3d_instancer.cpp
+@@ -482,7 +482,7 @@ void Terrain3DInstancer::add_instances(const Vector3 &p_global_position, const D
+ 
+ 		// Get random XZ position and height in a circle
+ 		real_t r_radius = radius * sqrt(UtilityFunctions::randf());
+-		real_t r_theta = UtilityFunctions::randf() * Math_TAU;
++		real_t r_theta = UtilityFunctions::randf() * Math::TAU;
+ 		Vector3 rand_vec = Vector3(r_radius * cos(r_theta), 0.f, r_radius * sin(r_theta));
+ 		Vector3 position = p_global_position + rand_vec;
+ 		// Get height, but skip holes
+@@ -509,11 +509,11 @@ void Terrain3DInstancer::add_instances(const Vector3 &p_global_position, const D
+ 				t.basis = Basis(x_axis, normal, z_axis).orthonormalized();
+ 			}
+ 		}
+-		real_t spin = (fixed_spin + random_spin * UtilityFunctions::randf()) * Math_PI / 180.f;
++		real_t spin = (fixed_spin + random_spin * UtilityFunctions::randf()) * Math::PI / 180.f;
+ 		if (abs(spin) > 0.001f) {
+ 			t.basis = t.basis.rotated(normal, spin);
+ 		}
+-		real_t tilt = (fixed_tilt + random_tilt * (2.f * UtilityFunctions::randf() - 1.f)) * Math_PI / 180.f;
++		real_t tilt = (fixed_tilt + random_tilt * (2.f * UtilityFunctions::randf() - 1.f)) * Math::PI / 180.f;
+ 		if (abs(tilt) > 0.001f) {
+ 			t.basis = t.basis.rotated(t.basis.get_column(0), tilt); // Rotate pitch, X-axis
+ 		}
+diff --git a/src/terrain_3d_mesh_asset.cpp b/src/terrain_3d_mesh_asset.cpp
+index 4151a5f..ed8efc0 100644
+--- a/src/terrain_3d_mesh_asset.cpp
++++ b/src/terrain_3d_mesh_asset.cpp
+@@ -51,7 +51,7 @@ Ref<ArrayMesh> Terrain3DMeshAsset::_get_generated_mesh() const {
+ 		z = start_pos.y;
+ 		real_t angle = 0.f;
+ 		if (m > 1) {
+-			angle = (m - 1) * Math_PI / _generated_faces;
++			angle = (m - 1) * Math::PI / _generated_faces;
+ 		}
+ 		for (int j = 0; j <= 1; j++) {
+ 			x = start_pos.x;
